@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <div class="profile-wrapper">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4a90e2&color=fff" 
+                     alt="Аватар {{ user.username }}" 
+                     class="avatar-image">
+            </div>
+            
+            <div class="profile-info">
+                {% if user.last_name and user.first_name %}
+                    <h1 class="profile-name">
+                        {{ user.last_name|capfirst }} {{ user.first_name|capfirst }}
+                    </h1>
+                {% else %}
+                    <h1 class="profile-name">
+                        {{ user.username|capfirst }}
+                    </h1>
+                {% endif %}
+                <p class="profile-username">@{{ user.username }}</p>
+                <p class="profile-email">{{ user.email }}</p>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-section personal-data">
+                <h2 class="section-title">Личные данные</h2>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="item-label">Имя пользователя:</span>
+                        <span class="item-value">{{ user.username }}</span>
+                    </div>
+                    {% if user.first_name %}
+                    <div class="profile-item">
+                        <span class="item-label">Имя:</span>
+                        <span class="item-value">{{ user.first_name|capfirst }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.last_name %}
+                    <div class="profile-item">
+                        <span class="item-label">Фамилия:</span>
+                        <span class="item-value">{{ user.last_name|capfirst }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="profile-item">
+                        <span class="item-label">Email:</span>
+                        <span class="item-value">{{ user.email }}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="item-label">Дата регистрации:</span>
+                        <span class="item-value">{{ user.date_joined|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                    Редактировать профиль
+                </a>
+                <a href="{% url 'change_password' %}" class="btn btn-secondary">
+                    Сменить пароль
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{{ teacher.last_name }} {{ teacher.first_name }} - Профиль преподавателя
+{% endblock %}
+
+{% block content %}
+<div class="container teacher-detail">
+    <div class="teacher-header">
+        <div class="teacher-info">
+            <div class="teacher-avatar">
+                {% if teacher.avatar %}
+                    <img src="{{ teacher.avatar.url }}" alt="{{ teacher.first_name }} {{ teacher.last_name }}" class="avatar-img">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="Default Avatar" class="avatar-img">
+                {% endif %}
+            </div>
+            
+            <div class="teacher-rating-summary">
+                <h1 class="teacher-name">
+                    {{ teacher.last_name }} {{ teacher.first_name }} 
+                    {% if teacher.patronymic %}
+                        {{ teacher.patronymic }}
+                    {% endif %}
+                </h1>
+                
+                <div class="rating-display">
+                    {% if ratings %}
+                        <div class="rating-value">
+                            <span class="rating-number">{{ avg_rating|floatformat:1 }}</span>
+                            <div class="rating-stars">
+                                {% with ''|center:5 as range %}
+                                    {% for _ in range %}
+                                        <span class="star {% if forloop.counter <= avg_rating|floatformat:0|add:'0' %}filled{% endif %}">★</span>
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <span class="rating-count">({{ ratings.count }} оценок)</span>
+                        </div>
+                    {% else %}
+                        <span class="no-rating-text">Нет оценок</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="teacher-actions">
+            <a href="{% url 'add_rating' teacher.id %}" class="btn btn-primary">Добавить отзыв</a>
+        </div>
+    </div>
+
+    <div class="content-sections">
+        <!-- Основная информация -->
+        <section class="info-section">
+            <h2>Основная информация</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Должность:</strong>
+                    <span>{{ teacher.position }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Факультет/Кафедра:</strong>
+                    <span>{{ teacher.department }}</span>
+                </div>
+                {% if teacher.email %}
+                <div class="info-item">
+                    <strong>Email:</strong>
+                    <span>{{ teacher.email }}</span>
+                </div>
+                {% endif %}
+                {% if teacher.phone_number %}
+                <div class="info-item">
+                    <strong>Телефон:</strong>
+                    <span>{{ teacher.phone_number }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Образование и квалификации -->
+        <section class="info-section">
+            <h2>Образование и квалификации</h2>
+            <div class="info-grid">
+                {% if teacher.academic_degree %}
+                <div class="info-item">
+                    <strong>Ученая степень:</strong>
+                    <span>{{ teacher.academic_degree }}</span>
+                </div>
+                {% endif %}
+                {% if teacher.academic_title %}
+                <div class="info-item">
+                    <strong>Ученое звание:</strong>
+                    <span>{{ teacher.academic_title }}</span>
+                </div>
+                {% endif %}
+                {% if teacher.specialization %}
+                <div class="info-item">
+                    <strong>Специализация:</strong>
+                    <span>{{ teacher.specialization }}</span>
+                </div>
+                {% endif %}
+                {% if teacher.education %}
+                <div class="info-item">
+                    <strong>Образование:</strong>
+                    <span>{{ teacher.education }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Профессиональная деятельность -->
+        <section class="info-section">
+            <h2>Профессиональная деятельность</h2>
+            
+            {% if teacher.courses.all %}
+            <div class="subsection">
+                <h3>Преподаваемые курсы</h3>
+                <ul class="courses-list">
+                    {% for course in teacher.courses.all %}
+                    <li>{{ course.name }}{% if course.description %} - {{ course.description }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if teacher.experience_years %}
+            <div class="subsection">
+                <h3>Опыт работы</h3>
+                <p>{{ teacher.experience_years }} лет</p>
+            </div>
+            {% endif %}
+
+            {% if teacher.publications.all %}
+            <div class="subsection">
+                <h3>Научные публикации</h3>
+                <ul class="publications-list">
+                    {% for pub in teacher.publications.all %}
+                    <li>
+                        {{ pub.title }}
+                        {% if pub.url %}
+                        <a href="{{ pub.url }}" target="_blank">[Ссылка]</a>
+                        {% endif %}
+                        {% if pub.pdf_file %}
+                        <a href="{{ pub.pdf_file.url }}" target="_blank">[PDF]</a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if teacher.thesis_projects.all %}
+            <div class="subsection">
+                <h3>Руководство дипломными проектами</h3>
+                <ul class="thesis-list">
+                    {% for thesis in teacher.thesis_projects.all %}
+                    <li>{{ thesis.student_name }} - "{{ thesis.title }}" ({{ thesis.year }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Отзывы -->
+        <section class="ratings-section">
+            <h2>Отзывы студентов</h2>
+            {% if ratings %}
+                <div class="ratings-grid">
+                    {% for rating in ratings %}
+                        <div class="rating-card">
+                            <div class="rating-header">
+                                <div class="rating-score">
+                                    {% with ''|center:5 as range %}
+                                        {% for _ in range %}
+                                            <span class="star {% if forloop.counter <= rating.score %}filled{% endif %}">★</span>
+                                        {% endfor %}
+                                    {% endwith %}
+                                    <span class="score-text">({{ rating.score }}/5)</span>
+                                </div>
+                                <div class="rating-actions">
+                                    {% if rating.user == request.user %}
+                                        <a href="{% url 'edit_rating' rating.id %}" class="edit-btn">
+                                            <i class="icon-edit">✎</i>
+                                        </a>
+                                        <a href="{% url 'delete_rating' rating.id %}" 
+                                           class="delete-btn" 
+                                           onclick="return confirm('Вы уверены, что хотите удалить этот отзыв?')">
+                                            <i class="icon-delete">✖</i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="rating-body">
+                                {% if rating.comment %}
+                                    <p class="rating-comment">{{ rating.comment }}</p>
+                                {% else %}
+                                    <p class="no-comment">Комментарий отсутствует</p>
+                                {% endif %}
+                                <div class="rating-author">
+                                    {{ rating.user.last_name }} {{ rating.user.first_name }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-ratings">Пока нет отзывов</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+{% endblock %}

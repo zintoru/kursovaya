@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Список преподавателей
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Преподаватели</h1>
+
+    <!-- Форма поиска и сортировки -->
+    <div class="search-sort-container">
+        <form method="get" class="search-form">
+            <div class="search-group">
+                <input type="text" name="q" placeholder="Поиск по имени" value="{{ request.GET.q }}" class="search-input">
+                <select name="sort_by" class="sort-select">
+                    <option value="first_name" {% if request.GET.sort_by == 'first_name' %}selected{% endif %}>По имени</option>
+                    <option value="last_name" {% if request.GET.sort_by == 'last_name' %}selected{% endif %}>По фамилии</option>
+                    <option value="rating" {% if request.GET.sort_by == 'rating' %}selected{% endif %}>По рейтингу</option>
+                </select>
+                <button type="submit" class="search-btn">Применить</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Сетка преподавателей -->
+    <div class="row">
+        {% for teacher in teachers %}
+        <div class="col-md-4 mb-4">
+            <div class="card teacher-card">
+                <div class="card-header">
+                    <div class="teacher-avatar">
+                        {% if teacher.avatar %}
+                            <img src="{{ teacher.avatar.url }}" alt="{{ teacher.first_name }} {{ teacher.last_name }}" class="avatar-img">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="Default Avatar" class="avatar-img">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'teacher_detail' teacher.id %}">
+                             {{ teacher.last_name }} {{ teacher.first_name }}
+                             {% if teacher.patronymic %}
+                                 {{ teacher.patronymic }}
+                             {% endif %}
+                        </a>
+                    </h5>
+                    <p class="card-text">{{ teacher.department }}</p>
+                    <p class="card-text"><small class="text-muted">{{ teacher.position }}</small></p>
+                    <div class="teacher-rating">
+                        {% if teacher.avg_rating > 0 %}
+                            <div class="rating-stars">
+                                {% with ''|center:5 as range %}
+                                    {% for _ in range %}
+                                        <span class="star {% if forloop.counter <= teacher.avg_rating %}filled{% endif %}">★</span>
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <span class="rating-value">{{ teacher.avg_rating|floatformat:1 }}</span>
+                        {% else %}
+                            <span class="no-rating">Нет оценок</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'teacher_detail' teacher.id %}" class="btn btn-primary mt-2">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="no-results">
+                <p>Преподаватели не найдены</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

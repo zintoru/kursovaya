@@ -1,0 +1,6 @@
+<!-- teachers/templates/teachers/add_teacher.html -->
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- Выводит форму как абзацы -->
+    <button type="submit">Добавить преподавателя</button>
+</form>

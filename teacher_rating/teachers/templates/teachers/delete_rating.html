@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Удалить отзыв
+{% endblock %}
+
+{% block content %}
+<h1>Вы уверены, что хотите удалить этот отзыв?</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Удалить</button>
+</form>
+
+<a href="{% url 'teacher_detail' rating.teacher.id %}">Отмена</a>
+{% endblock %}

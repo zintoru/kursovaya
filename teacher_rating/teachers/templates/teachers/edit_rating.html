@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Редактировать отзыв
+{% endblock %}
+
+{% block content %}
+<div class="container edit-rating-container">
+    <h1 class="page-title">Редактировать отзыв</h1>
+
+    <div class="edit-rating-wrapper">
+        <form method="post" class="edit-rating-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rating">Оценка</label>
+                <select name="{{ form.score.name }}" id="rating" class="form-control">
+                    <option value="">Выберите оценку</option>
+                    <option value="1" {% if form.score.value == 1 %}selected{% endif %}>1 - Очень плохо</option>
+                    <option value="2" {% if form.score.value == 2 %}selected{% endif %}>2 - Плохо</option>
+                    <option value="3" {% if form.score.value == 3 %}selected{% endif %}>3 - Удовлетворительно</option>
+                    <option value="4" {% if form.score.value == 4 %}selected{% endif %}>4 - Хорошо</option>
+                    <option value="5" {% if form.score.value == 5 %}selected{% endif %}>5 - Отлично</option>
+                </select>
+                {% if form.score.errors %}
+                    <div class="error-message">{{ form.score.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.comment.id_for_label }}">Комментарий</label>
+                {{ form.comment }}
+                {% if form.comment.errors %}
+                    <div class="error-message">{{ form.comment.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="{% url 'teacher_detail' rating.teacher.id %}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="teacher-context">
+        <h2 class="section-title">Преподаватель</h2>
+        <div class="teacher-info">
+            <h3>{{ rating.teacher.last_name }} {{ rating.teacher.first_name }} {{ rating.teacher.patronymic }}</h3>
+            <p>{{ rating.teacher.department }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
