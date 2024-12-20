@@ -31,28 +31,39 @@ class TeacherForm(forms.ModelForm):
 
 # Форма для добавления и редактирования рейтинга преподавателя
 class RatingForm(forms.ModelForm):
+    teaching_quality = forms.ChoiceField(
+        choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
+        label='Качество преподавания'
+    )
+    availability = forms.ChoiceField(
+        choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
+        label='Доступность'
+    )
+    methodology = forms.ChoiceField(
+        choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
+        label='Методология'
+    )
+
     class Meta:
         model = Rating
-        fields = ['score', 'comment']
+        fields = ['teaching_quality', 'availability', 'methodology', 'comment']
         widgets = {
-            'score': forms.NumberInput(attrs={'min': 1, 'max': 5}),
-            'comment': forms.Textarea(attrs={
-                'rows': 3, 'placeholder': 'Ваш отзыв'
-            })
+            'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Ваш отзыв'})
         }
         labels = {
-            'score': 'Оценка (1-5)',
             'comment': 'Комментарий',
         }
 
 
 # Форма для регистрации нового пользователя
 class UserRegisterForm(UserCreationForm):
-    email = forms.EmailField()
-    
+    email = forms.EmailField(label='Электронная почта')
+    first_name = forms.CharField(max_length=30, label='Имя')
+    last_name = forms.CharField(max_length=30, label='Фамилия')
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

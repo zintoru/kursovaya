@@ -11,24 +11,49 @@
     <div class="edit-rating-wrapper">
         <form method="post" class="edit-rating-form">
             {% csrf_token %}
+            
             <div class="form-group">
-                <label for="rating">Оценка</label>
-                <select name="{{ form.score.name }}" id="rating" class="form-control">
+                <label for="teaching_quality">Оценка качества преподавания</label>
+                <select name="{{ form.teaching_quality.name }}" id="teaching_quality" class="form-control">
                     <option value="">Выберите оценку</option>
-                    <option value="1" {% if form.score.value == 1 %}selected{% endif %}>1 - Очень плохо</option>
-                    <option value="2" {% if form.score.value == 2 %}selected{% endif %}>2 - Плохо</option>
-                    <option value="3" {% if form.score.value == 3 %}selected{% endif %}>3 - Удовлетворительно</option>
-                    <option value="4" {% if form.score.value == 4 %}selected{% endif %}>4 - Хорошо</option>
-                    <option value="5" {% if form.score.value == 5 %}selected{% endif %}>5 - Отлично</option>
+                    {% for i in "12345" %}
+                        <option value="{{ i }}" {% if rating.teaching_quality|stringformat:"d" == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
                 </select>
-                {% if form.score.errors %}
-                    <div class="error-message">{{ form.score.errors }}</div>
+                {% if form.teaching_quality.errors %}
+                    <div class="error-message">{{ form.teaching_quality.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="availability">Оценка доступности</label>
+                <select name="{{ form.availability.name }}" id="availability" class="form-control">
+                    <option value="">Выберите оценку</option>
+                    {% for i in "12345" %}
+                        <option value="{{ i }}" {% if rating.availability|stringformat:"d" == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.availability.errors %}
+                    <div class="error-message">{{ form.availability.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="methodology">Оценка методологии</label>
+                <select name="{{ form.methodology.name }}" id="methodology" class="form-control">
+                    <option value="">Выберите оценку</option>
+                    {% for i in "12345" %}
+                        <option value="{{ i }}" {% if rating.methodology|stringformat:"d" == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.methodology.errors %}
+                    <div class="error-message">{{ form.methodology.errors }}</div>
                 {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="{{ form.comment.id_for_label }}">Комментарий</label>
-                {{ form.comment }}
+                <textarea name="{{ form.comment.name }}" class="form-control">{{ rating.comment }}</textarea>
                 {% if form.comment.errors %}
                     <div class="error-message">{{ form.comment.errors }}</div>
                 {% endif %}

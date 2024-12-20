@@ -9,6 +9,23 @@ from django.db.models import Avg
 from .models import Teacher, Rating
 from .forms import (TeacherForm, RatingForm, UserRegisterForm, UserProfileForm,
                     CustomPasswordChangeForm)
+from django.contrib.auth.views import LoginView
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        print(f'Request path: {request.path}')  # Вывод пути запроса
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        print(self.get_form())  # Вывод информации о форме в консоль
+        return super().get_success_url()  # Customize this if needed
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        return context
 
 
 @login_required
@@ -107,6 +124,10 @@ def add_rating(request, teacher_id):
             rating = form.save(commit=False)
             rating.teacher = teacher
             rating.user = request.user
+            # Save additional criteria
+            rating.teaching_quality = form.cleaned_data['teaching_quality']
+            rating.availability = form.cleaned_data['availability']
+            rating.methodology = form.cleaned_data['methodology']
             rating.save()
             messages.success(request, 'Ваш отзыв был успешно сохранен.')
             return redirect('teacher_detail', teacher_id=teacher.id)
@@ -140,12 +161,19 @@ def edit_teacher(request, teacher_id):
 @login_required
 def teacher_list(request):
     query = request.GET.get('q', '')
-    # Поиск по имени или фамилии
     sort_by = request.GET.get('sort_by', 'first_name')
-    # Сортировка по умолчанию по имени
+
+    # Измените avg_rating на annotated_avg_rating
     teachers = Teacher.objects.annotate(
-        avg_rating=Avg('ratings__score')
+        annotated_avg_rating=Avg('ratings__teaching_quality'),
+        avg_availability=Avg('ratings__availability'),
+        avg_methodology=Avg('ratings__methodology')
     )
+
+    # Отладочные сообщения
+    print("Teachers with average ratings:")
+    for teacher in teachers:
+        print(f"{teacher.id}: avg_rating={teacher.avg_rating}, annotated_avg_rating={teacher.annotated_avg_rating}, avg_availability={teacher.avg_availability}, avg_methodology={teacher.avg_methodology}")
 
     # Фильтрация по имени преподавателя
     if query:
@@ -155,11 +183,9 @@ def teacher_list(request):
 
     # Сортировка по рейтингу или имени
     if sort_by == 'rating':
-        teachers = teachers.order_by('-avg_rating')
-        # Сортировка по убыванию среднего рейтинга
+        teachers = teachers.order_by('-annotated_avg_rating')  # Измените на annotated_avg_rating
     else:
         teachers = teachers.order_by(sort_by)
-        # Сортировка по имени или фамилии
 
     return render(request, 'teachers/teacher_list.html',
                   {'teachers': teachers})
@@ -170,30 +196,23 @@ def teacher_list(request):
 def teacher_detail(request, teacher_id):
     teacher = get_object_or_404(Teacher, id=teacher_id)
     ratings = teacher.ratings.all().order_by('-created_at')
-    
-    # Calculate average rating
-    if ratings.exists():
-        avg_rating = ratings.aggregate(Avg('score'))['score__avg']
-    else:
-        avg_rating = None
-    
+
+    # Используем teacher.avg_rating для получения среднего рейтинга
+    avg_rating = teacher.avg_rating
+
     # Get related data
     courses = teacher.courses.all()
     publications = teacher.publications.all()
     thesis_projects = teacher.thesis_projects.all().order_by('-year')
-    
-    # Ensure the view only handles GET requests for rendering the page
-    if request.method == 'GET':
-        return render(request, 'teachers/teacher_detail.html', {
-            'teacher': teacher,
-            'ratings': ratings,
-            'avg_rating': avg_rating,
-            'courses': courses,
-            'publications': publications,
-            'thesis_projects': thesis_projects,
-        })
-    else:
-        return HttpResponseNotAllowed(['GET'])  # Return 405 for non-GET requests
+
+    return render(request, 'teachers/teacher_detail.html', {
+        'teacher': teacher,
+        'ratings': ratings,
+        'avg_rating': avg_rating,  # Передаем avg_rating в шаблон
+        'courses': courses,
+        'publications': publications,
+        'thesis_projects': thesis_projects,
+    })
 
 
 def logout_view(request):

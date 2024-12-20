@@ -2,6 +2,7 @@ from django.urls import path
 from . import views  # Импортируем представления из текущего приложения
 from django.shortcuts import redirect
 from .views import logout_view
+from .views import CustomLoginView
 
 urlpatterns = [
     # Перенаправление на главную
@@ -36,5 +37,6 @@ urlpatterns = [
     # Удаление отзыва
     path('delete_rating/<int:rating_id>/',
          views.delete_rating, name='delete_rating'),
+    path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
 ]

@@ -7,16 +7,18 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     # Админ-панель Django
-    path('admin/', admin.site.urls, name='admin'),
+    path('admin/', admin.site.urls),
 
     # Стандартные URL для аутентификации (вход, выход, регистрация)
     path('accounts/', include('django.contrib.auth.urls')),  # Логин, выход
 
     # Страница входа
-    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('login/', views.CustomLoginView.as_view(), name='login'),
 
     # Страница регистрации пользователя
     path('register/', views.register, name='register'),
+
+    # Другие маршруты
 
     # Страница смены пароля
     path('password_change/', auth_views.PasswordChangeView.as_view(),

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models import Avg
 
 
 class Course(models.Model):
@@ -49,10 +50,17 @@ class Teacher(models.Model):
     avatar = models.ImageField(upload_to='teacher_avatars/', null=True, blank=True)
 
     @property
-    def average_rating(self):
+    def avg_rating(self):
         ratings = self.ratings.all()
-        if ratings:
-            return sum([rating.score for rating in ratings]) / len(ratings)
+        if ratings.exists():
+            teaching_quality_avg = ratings.aggregate(Avg('teaching_quality'))['teaching_quality__avg'] or 0
+            availability_avg = ratings.aggregate(Avg('availability'))['availability__avg'] or 0
+            methodology_avg = ratings.aggregate(Avg('methodology'))['methodology__avg'] or 0
+            
+            # Вычисляем общий средний рейтинг по трем критериям
+            total_ratings = teaching_quality_avg + availability_avg + methodology_avg
+            count = sum(1 for x in [teaching_quality_avg, availability_avg, methodology_avg] if x > 0)
+            return total_ratings / count if count > 0 else 0
         return 0
 
     def __str__(self):
@@ -71,9 +79,17 @@ class Rating(models.Model):
         User,  # Связь с пользователем
         on_delete=models.CASCADE
     )
-    score = models.IntegerField(
+    teaching_quality = models.IntegerField(
         choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
-        help_text="Оценка от 1 до 5"
+        help_text="Оценка качества преподавания от 1 до 5"
+    )
+    availability = models.IntegerField(
+        choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
+        help_text="Оценка доступности преподавателя от 1 до 5"
+    )
+    methodology = models.IntegerField(
+        choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')],
+        help_text="Оценка методологии преподавания от 1 до 5"
     )
     comment = models.TextField(
         blank=True, null=True,

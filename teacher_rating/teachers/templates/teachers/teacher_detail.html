@@ -106,63 +106,38 @@
                     <span>{{ teacher.education }}</span>
                 </div>
                 {% endif %}
+                {% if teacher.experience_years %}
+                <div class="info-item">
+                    <strong>Стаж работы:</strong>
+                    <span>{{ teacher.experience_years }} лет</span>
+                </div>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Профессиональная деятельность -->
-        <section class="info-section">
-            <h2>Профессиональная деятельность</h2>
-            
-            {% if teacher.courses.all %}
-            <div class="subsection">
-                <h3>Преподаваемые курсы</h3>
-                <ul class="courses-list">
-                    {% for course in teacher.courses.all %}
-                    <li>{{ course.name }}{% if course.description %} - {{ course.description }}{% endif %}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
-            {% if teacher.experience_years %}
-            <div class="subsection">
-                <h3>Опыт работы</h3>
-                <p>{{ teacher.experience_years }} лет</p>
-            </div>
-            {% endif %}
-
+        <!-- Научные публикации -->
+        <section class="publications-section info-section">
+            <h2>Научные публикации</h2>
             {% if teacher.publications.all %}
-            <div class="subsection">
-                <h3>Научные публикации</h3>
-                <ul class="publications-list">
-                    {% for pub in teacher.publications.all %}
-                    <li>
-                        {{ pub.title }}
-                        {% if pub.url %}
-                        <a href="{{ pub.url }}" target="_blank">[Ссылка]</a>
-                        {% endif %}
-                        {% if pub.pdf_file %}
-                        <a href="{{ pub.pdf_file.url }}" target="_blank">[PDF]</a>
-                        {% endif %}
-                    </li>
+                <div class="publications-grid">
+                    {% for publication in teacher.publications.all %}
+                        <div class="publication-item">
+                            <h3 class="publication-title">{{ publication.title }}</h3>
+                            {% if publication.url %}
+                                <a href="{{ publication.url }}" class="publication-link" target="_blank">Ссылка на публикацию</a>
+                            {% endif %}
+                            {% if publication.pdf_file %}
+                                <a href="{{ publication.pdf_file.url }}" class="publication-file" target="_blank">Скачать PDF</a>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
-            {% if teacher.thesis_projects.all %}
-            <div class="subsection">
-                <h3>Руководство дипломными проектами</h3>
-                <ul class="thesis-list">
-                    {% for thesis in teacher.thesis_projects.all %}
-                    <li>{{ thesis.student_name }} - "{{ thesis.title }}" ({{ thesis.year }})</li>
-                    {% endfor %}
-                </ul>
-            </div>
+                </div>
+            {% else %}
+                <p class="no-publications">Нет доступных публикаций</p>
             {% endif %}
         </section>
 
-        <!-- Отзывы -->
+        <!-- Отзывы студентов -->
         <section class="ratings-section">
             <h2>Отзывы студентов</h2>
             {% if ratings %}
@@ -170,43 +145,52 @@
                     {% for rating in ratings %}
                         <div class="rating-card">
                             <div class="rating-header">
-                                <div class="rating-score">
-                                    {% with ''|center:5 as range %}
-                                        {% for _ in range %}
-                                            <span class="star {% if forloop.counter <= rating.score %}filled{% endif %}">★</span>
-                                        {% endfor %}
-                                    {% endwith %}
-                                    <span class="score-text">({{ rating.score }}/5)</span>
+                                <div class="rating-metrics">
+                                    <div class="metric">
+                                        <span class="metric-label">Качество обучения:</span>
+                                        <div class="stars">
+                                            {% with ''|center:5 as range %}
+                                                {% for _ in range %}
+                                                    <span class="star {% if forloop.counter <= rating.teaching_quality %}filled{% endif %}">★</span>
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Доступность материала:</span>
+                                        <div class="stars">
+                                            {% with ''|center:5 as range %}
+                                                {% for _ in range %}
+                                                    <span class="star {% if forloop.counter <= rating.availability %}filled{% endif %}">★</span>
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-label">Методология:</span>
+                                        <div class="stars">
+                                            {% with ''|center:5 as range %}
+                                                {% for _ in range %}
+                                                    <span class="star {% if forloop.counter <= rating.methodology %}filled{% endif %}">★</span>
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="rating-actions">
-                                    {% if rating.user == request.user %}
-                                        <a href="{% url 'edit_rating' rating.id %}" class="edit-btn">
-                                            <i class="icon-edit">✎</i>
-                                        </a>
-                                        <a href="{% url 'delete_rating' rating.id %}" 
-                                           class="delete-btn" 
-                                           onclick="return confirm('Вы уверены, что хотите удалить этот отзыв?')">
-                                            <i class="icon-delete">✖</i>
-                                        </a>
-                                    {% endif %}
+                                <div class="rating-date">
+                                    {{ rating.created_at|date:"d.m.Y" }}
                                 </div>
                             </div>
-                            
-                            <div class="rating-body">
-                                {% if rating.comment %}
-                                    <p class="rating-comment">{{ rating.comment }}</p>
-                                {% else %}
-                                    <p class="no-comment">Комментарий отсутствует</p>
-                                {% endif %}
-                                <div class="rating-author">
-                                    {{ rating.user.last_name }} {{ rating.user.first_name }}
+                            {% if rating.comment %}
+                                <div class="rating-comment">
+                                    {{ rating.comment }}
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="no-ratings">Пока нет отзывов</p>
+                <p class="no-ratings">Нет отзывов</p>
             {% endif %}
         </section>
     </div>
